@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apoio à Decisão – Notebooks</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header>
+  <h1>Apoio à Decisão – Escolha de Notebooks</h1>
+  <p>Esta página serve para registrar e comparar dados de notebooks para a decisão de compra do comitê de TI.</p>
+</header>
+
+<main>
+  <div class="tabela-wrap">
+    <table id="tabelaDados">
+      <thead>
+        <tr>
+          <th>Modelo</th>
+          <th>
+            <span class="criterio">Preço</span>
+            <label>Unidade <input type="text" value="R$"></label>
+            <label>Tipo
+              <select class="tipo">
+                <option value="beneficio">Benefício</option>
+                <option value="custo" selected>Custo</option>
+              </select>
+            </label>
+          </th>
+          <th>
+            <span class="criterio">Memória RAM</span>
+            <label>Unidade <input type="text" value="GB"></label>
+            <label>Tipo
+              <select class="tipo">
+                <option value="beneficio" selected>Benefício</option>
+                <option value="custo">Custo</option>
+              </select>
+            </label>
+          </th>
+          <th>
+            <span class="criterio">Armazenamento SSD</span>
+            <label>Unidade <input type="text" value="GB"></label>
+            <label>Tipo
+              <select class="tipo">
+                <option value="beneficio" selected>Benefício</option>
+                <option value="custo">Custo</option>
+              </select>
+            </label>
+          </th>
+          <th>
+            <span class="criterio">Autonomia de Bateria</span>
+            <label>Unidade <input type="text" value="horas"></label>
+            <label>Tipo
+              <select class="tipo">
+                <option value="beneficio" selected>Benefício</option>
+                <option value="custo">Custo</option>
+              </select>
+            </label>
+          </th>
+          <th>
+            <span class="criterio">Processamento/CPU</span>
+            <label>Unidade <input type="text" value="pontos"></label>
+            <label>Tipo
+              <select class="tipo">
+                <option value="beneficio" selected>Benefício</option>
+                <option value="custo">Custo</option>
+              </select>
+            </label>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="corpoTabela"></tbody>
+    </table>
+  </div>
+
+  <div class="acoes">
+    <button id="btnAdicionar" type="button" title="Adicionar notebook">+</button>
+    <button id="btnSimular" type="button" class="btn-texto">Simular pesquisa</button>
+    <button id="btnLimpar" type="button" class="btn-texto btn-secundario">Limpar simulação</button>
+  </div>
+
+  <h2>Valores normalizados (Min-Max, 0 a 1)</h2>
+  <div class="tabela-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Modelo</th>
+          <th>Preço</th>
+          <th>Memória RAM</th>
+          <th>Armazenamento SSD</th>
+          <th>Autonomia de Bateria</th>
+          <th>Processamento/CPU</th>
+        </tr>
+      </thead>
+      <tbody id="corpoNormalizado"></tbody>
+    </table>
+  </div>
+
+  <h2>Pesos dos critérios – AHP (Saaty)</h2>
+  <p class="nota">Preencha os julgamentos acima da diagonal (escala de 1 a 9 e recíprocas). Os valores abaixo da diagonal são as recíprocas, calculadas automaticamente.</p>
+  <div class="tabela-wrap">
+    <table id="tabelaAHP"></table>
+  </div>
+
+  <div class="ahp-resultados">
+    <div class="tabela-wrap">
+      <table>
+        <thead><tr><th>Critério</th><th>Peso</th></tr></thead>
+        <tbody id="corpoPesos"></tbody>
+      </table>
+    </div>
+    <div class="tabela-wrap">
+      <table>
+        <tbody id="corpoConsistencia"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Ranking final</h2>
+  <div class="tabela-wrap">
+    <table>
+      <thead><tr><th>Posição</th><th>Modelo</th><th>Pontuação final</th></tr></thead>
+      <tbody id="corpoRanking"></tbody>
+    </table>
+  </div>
+
+  <h2>Parecer executivo</h2>
+  <div id="parecer" class="parecer"></div>
+
+  <h2>Programação Linear – quantidades a adquirir</h2>
+  <div id="secaoPL" class="parecer">
+    <p class="nota">X1 = quantidade do 1º colocado e X2 = quantidade do 2º colocado no ranking. Os preços vêm da tabela de notebooks; os demais valores são editáveis.</p>
+
+    <h3>Função objetivo (maximizar o retorno operacional total Z)</h3>
+    <div class="linha-pl">
+      Máx Z = <input type="number" step="any" id="c1" value="1"> X1 +
+      <input type="number" step="any" id="c2" value="1"> X2
+    </div>
+    <p class="nota">Coeficientes = retorno operacional por unidade de cada notebook.</p>
+
+    <h3>Restrição 1 – Orçamento</h3>
+    <div class="linha-pl">
+      <span id="p1">0</span> X1 + <span id="p2">0</span> X2 ≤
+      <input type="number" step="any" id="orcamento" value="50000"> (orçamento total em R$)
+    </div>
+
+    <h3>Restrição 2 – Limite operacional</h3>
+    <div class="linha-pl">
+      Descrição: <input type="text" id="descLimite" value="Horas de suporte" class="txt-pl">
+    </div>
+    <div class="linha-pl">
+      <input type="number" step="any" id="a21" value="1"> X1 +
+      <input type="number" step="any" id="a22" value="1"> X2 ≤
+      <input type="number" step="any" id="limite" value="20">
+    </div>
+
+    <h3>Não negatividade</h3>
+    <div class="linha-pl">X1 ≥ 0, X2 ≥ 0</div>
+  </div>
+
+  <h2>Modelo na forma padrão</h2>
+  <div id="modeloPL" class="parecer"></div>
+
+  <h2>Resolução pelo Método Simplex Tabular</h2>
+  <div id="simplex"></div>
+
+  <h2>Diagnóstico gerencial</h2>
+  <div id="diagnostico" class="parecer"></div>
+</main>
+
+<script src="js/tabela.js"></script>
+<script src="js/normalizacao.js"></script>
+<script src="js/ahp.js"></script>
+<script src="js/ranking.js"></script>
+<script src="js/pl.js"></script>
+<script src="js/simplex.js"></script>
+<script src="js/diagnostico.js"></script>
+<script src="js/simulacao.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
